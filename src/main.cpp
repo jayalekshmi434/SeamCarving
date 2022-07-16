@@ -1,11 +1,18 @@
+
+
+
 #include "stdio.h"
 #include <iostream>
 #include <opencv4/opencv2/highgui.hpp>
 #include <opencv4/opencv2/imgproc.hpp>
+#include <opencv4/opencv2/imgcodecs.hpp>
 
 
-#include "Image.h"
-#include "detectKey.h"
+
+#include "Seamcarver.h"
+
+cv::Mat original;
+int val;
 
 static void show_usage(std::string name)
 {
@@ -14,7 +21,13 @@ static void show_usage(std::string name)
               << std::endl;
 }
 
-
+static void on_trackbar(int,void*){
+   std::cout << "called " <<std::endl;
+   cv::Size sz= original.size();
+   std::cout << sz.height <<std::endl;
+   cv::resize(original, original, cv::Size(val,300));
+   cv::imshow( "Slider", original );
+}
 int main (int argc,char* argv[]) {
 
 	if (argc < 2) { // We expect 2 arguments: the program name, the image source path
@@ -31,26 +44,19 @@ int main (int argc,char* argv[]) {
 	}
 	
 
-	Image img(path);
-	//img.resize();
-	img.convertToGrayScale();
-	img.addPaddingToImage();
-	cv::Mat target=img.calculateEnergy(img.grayScale);
-	cv::imshow("energy Matrix",target);
+	
+	Seamcarver seamcarver;
+	seamcarver.carve(path);
 
-	/*
-	
-	
-	
-	///cv::imshow(img);
-	int c = cv::waitKey(0);
+    
 
 
-	detectKey key;
-	bool run = true;
-	//key.handleInput(run);
-	*/
-	int c = cv::waitKey(0);
+    //original = cv::imread(path);
+    //cv::imshow("Slider",original);
+    //cv::resize(original,original,cv::Size(300,250));//loading the image in the matrix//
+    //cv::namedWindow("Slider");
+   
+
 	return 0;
 
 }

@@ -2,6 +2,7 @@
 #include<SDL2/SDL.h>
 #include<string>
 
+
 #define KEY_UP    72
 #define KEY_LEFT  75
 #define KEY_RIGHT 77
@@ -19,7 +20,8 @@ class detectKey{
         };
         detectKey();
         ~detectKey();
-        void handleInput(bool running);
+        void handleInput(bool &running);
+
     private:
         SDL_Event event;
         const Uint8* state ;

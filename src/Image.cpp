@@ -9,6 +9,11 @@ Image::Image(std::string path){
     
     
 }
+Image::Image(){
+    
+    
+    
+}
 
 void Image::resize(){
     cv::resize(image,image,cv::Size(650,400));
@@ -22,7 +27,7 @@ void  Image::convertToGrayScale(){
     cv:: cvtColor(image,grayScale,cv::COLOR_BGR2GRAY);
 }
 
-cv::Mat Image::addPaddingToImage(){
+void Image::addPaddingToImage(){
 
     int paddingWidth=2;
     int paddingHeight=2;
@@ -54,7 +59,7 @@ cv::Mat Image::addPaddingToImage(){
     paddedImage.at<uchar>(height+1,0)=grayScale.at<uchar>(height-1,0);
     paddedImage.at<uchar>(height+1,width+1)=grayScale.at<uchar>(height-1,width-1);
 
-    return paddedImage;
+    paddedImg= paddedImage;
 
 }
 
@@ -78,6 +83,7 @@ cv::Mat Image::calculateEnergy(cv::Mat &source){
 
     cv::addWeighted(xGradient, 0.5, yGradient, 0.5, 0, target);
     target.convertTo(target, CV_64F, 1.0/255.0);
+    int v= cv::waitKey(0);
     return target;
 
     
@@ -100,6 +106,50 @@ cv::Mat Image::getEnergyMap(cv::Mat &energyMat){
            calculateCumulativePixels(r,c,energyMat,energyMap);
         }
     }
+    return energyMap;
+}
+
+std::vector<int> Image::getLowestEnergyPath(cv::Mat &eMap){
+    
+    int rows=eMap.rows;
+    std::vector<int> seam(rows);
+    std::vector<double> backTrack(3);
+
+    //get min val index in last row
+
+    cv::Point minIdxPointr;
+    cv::Mat temp=eMap.row(eMap.rows-1);
+    cv::minMaxLoc(temp,nullptr,nullptr,&minIdxPointr,nullptr);
+    int idx= minIdxPointr.x;
+    seam[eMap.rows-1]=idx;
+
+    //now back track to get seam
+    
+    for(int r=eMap.rows-2;r>=0;r--){
+        backTrack[0]=eMap.at<uchar>(r,std::max(idx-1,0));
+        backTrack[1]=eMap.at<uchar>(r,idx);
+        backTrack[2]=eMap.at<uchar>(r,std::min(idx+1,eMap.cols-1));
+        int offset=0;
+        //find min indx
+        
+        int minIdx=std::min_element(backTrack.begin(),backTrack.end())-backTrack.begin();
+        
+        if(minIdx==0){
+            offset=-1;
+        } else if(minIdx== 1){
+            offset=0;
+        } else{
+            offset=1;
+        }
+        
+        idx=idx+offset;
+        seam[r]=std::min(std::max(idx,0),eMap.cols-1);
+
+    }
+  
+
+    return seam;
+
 }
 
 std::vector<int> Image::getSeamToRemove(cv::Mat &energyMap,Image::carveMode direction) {
@@ -107,18 +157,157 @@ std::vector<int> Image::getSeamToRemove(cv::Mat &energyMap,Image::carveMode dire
    
     cv::Mat source;
     cv::Mat cumulativeEnergyMap;
-    cv::Mat result;
     std::vector<int> lowestEnergyPath;
 
     // Rotate the image to operate horzontally
-    if (direction == HORIZONTAL) {
+    if (direction == HORIZONTAL_ADD || HORIZONTAL_TRIM) {
         cv::rotate(energyMap, source, cv::ROTATE_90_CLOCKWISE);
     } else {
         source = energyMap;
     }
 
     cumulativeEnergyMap = getEnergyMap(source);
-   // lowestEnergyPath = calculateLowestEnergyPath(cumulativeEnergyMap);
+    lowestEnergyPath = getLowestEnergyPath(cumulativeEnergyMap);
 
     return lowestEnergyPath;
+}
+
+cv::Mat Image::removeSeam(cv::Mat &img,std::vector<int>seam ){
+    //create a Mat
+    cv::Mat modifiedImage =cv::Mat(img.rows,img.cols-1,img.type(),double(0));
+    cv::Mat tempL,tempR,temp;
+    for(int r=0;r<img.rows;r++){
+         img(cv::Range(r,r+1), cv::Range(0,seam[r])).copyTo(tempL);
+         img(cv::Range(r,r+1),cv::Range(seam[r]+1,img.cols)).copyTo(tempR);
+         if (tempL.empty()) {
+            temp = tempR;
+        } else if (tempR.empty()) {
+            temp = tempL;
+        } else {
+            cv::hconcat(tempL,tempR,temp);
+        }
+
+        temp.copyTo(modifiedImage.row(r));
+    }
+
+    return modifiedImage;
+
+}
+
+cv::Mat Image::addSeam(cv::Mat &img , std::vector<int>seam){
+    cv::Mat modifiedImage(img.rows, img.cols+1, CV_8UC3, cv::Scalar(0, 0, 0));
+		
+			int max = img.rows-1;
+			int width=0;
+			for (int h = 0; h < img.rows; h++)
+			{
+				for (int w = 0; w < img.cols; w++)
+				{
+					// duplicate best seam
+					if (w == seam[h])
+					{
+						modifiedImage.at<cv::Vec3b>(h, w) = img.at<cv::Vec3b>(h, width);
+						modifiedImage.at<cv::Vec3b>(h, w+1) = img.at<cv::Vec3b>(h, width);
+						w++;
+					
+					}
+					else
+					{
+						modifiedImage.at<cv::Vec3b>(h, w) = img.at<cv::Vec3b>(h, width);
+					}
+                    width++;
+				}
+				width = 0;
+            }
+   
+
+    return modifiedImage;
+   
+
+}
+
+cv::Mat Image::addHorizontalSeam(cv::Mat &img , std::vector<int>seam){
+
+    cv:: cvtColor(img,grayScale,cv::COLOR_BGR2GRAY);
+    cv::Mat eMap =calculateEnergy(grayScale);
+	std::vector<int>seam1=getSeamToRemove(eMap,HORIZONTAL_ADD);
+    std::cout << "reached Here also"<<std::endl;
+    cv::Mat rotatedImg,modImg;
+    
+    cv::Mat modifiedImage(img.rows+1, img.cols, CV_8UC3, cv::Scalar(0, 0, 0));
+	cv::Mat img_new(img.rows+1, img.cols, CV_8UC3, cv::Scalar(0, 0, 0));
+			int max = width - 1;
+			int hh = 0;
+			for (int w = 0; w < img.cols; w++)
+			{
+				for (int h = 0; h < img.rows; h++)
+				{
+					// duplicate best seam
+					if (h == seam1[w])
+					{
+						img_new.at<cv::Vec3b>(h, w) = img.at<cv::Vec3b>(hh, w);
+						img_new.at<cv::Vec3b>(h+1, w) = img.at<cv::Vec3b>(hh, w);
+						h++;
+						hh++;
+					}
+					else
+					{
+						img_new.at<cv::Vec3b>(h, w) = img.at<cv::Vec3b>(hh, w);
+						hh++;
+					}
+				}
+				hh = 0;
+				max--;
+			}	
+			
+    return img_new;
+   
+
+}
+
+cv::Mat Image ::removeverticalSeam(cv::Mat &img,std::vector<int>seam){
+    return Image::removeSeam(img,seam);
+}
+
+cv::Mat Image ::removeHorizontalSeam(cv::Mat &img,std::vector<int>seam){
+    cv::Mat rotatedImg,modImg;
+    cv::rotate(img,rotatedImg,cv::ROTATE_90_CLOCKWISE);
+    modImg=Image::removeSeam(rotatedImg,seam);
+    cv::rotate(modImg,modImg,cv::ROTATE_90_COUNTERCLOCKWISE);
+    return modImg;
+}
+
+cv::Mat Image ::addVerticalSeam(cv::Mat &img,std::vector<int>seam){
+    return Image::addSeam(img,seam);
+}
+
+cv::Mat Image ::addHorizontalSeam(cv::Mat &img,std::vector<int>seam, bool rotate){
+    cv::Mat rotatedImg,modImg;
+    cv::rotate(img,rotatedImg,cv::ROTATE_90_CLOCKWISE);
+    modImg=addSeam(rotatedImg,seam);
+    cv::rotate(modImg,modImg,cv::ROTATE_90_COUNTERCLOCKWISE);
+    return modImg;
+}
+
+cv::Mat Image::seamcarve(cv::Mat& img, carveMode mode){
+     cv:: cvtColor(img,grayScale,cv::COLOR_BGR2GRAY);
+     cv::Mat eMap =calculateEnergy(grayScale);
+	 std::vector<int>seam=getSeamToRemove(eMap,mode);
+     cv::Mat modImg;
+     switch(mode){
+         case VERTICAL_TRIM:
+            modImg=removeverticalSeam(img,seam);
+            break;
+        case HORIZONTAL_TRIM:
+            modImg=removeHorizontalSeam(img,seam);
+            break;
+        case HORIZONTAL_ADD:
+            modImg=addHSeam(img,seam);
+            break;
+        case  VERTICAL_ADD :
+            modImg=addVerticalSeam(img,seam);
+            break;
+            
+     }
+     return modImg;
 }

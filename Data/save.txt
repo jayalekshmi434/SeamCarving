@@ -1,0 +1,104 @@
+#include "Seamcarver.h"
+#include"Image.h"
+
+
+
+Seamcarver::Seamcarver(){
+     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) != 0){
+        SDL_Log("Unable to initialize SDL: %s", SDL_GetError());
+    }
+
+  
+    std::cout << "Seam Carver Initilialized";
+}
+
+Seamcarver::~Seamcarver()
+{  
+    SDL_DestroyWindow(window);
+    SDL_Quit(); 
+}
+
+void Seamcarver::carve(std::string path){
+    Image img(path);
+    img.resize();
+    cv::imshow("Original Image",img.image);
+    bool running =true;
+
+    
+   cv::Mat resizedImg;
+   resizedImg=img.image.clone();
+   cv::imshow("resizeInit",resizedImg);
+   int c=cv::waitKey(0);
+    window=SDL_CreateWindow("SDL2 Displaying Image",SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 100, 100, SDL_WINDOW_BORDERLESS);
+    SDL_Event e;
+    while(running){
+        
+    
+    while (SDL_PollEvent(&e)){   
+        std::cout<< "still running";
+        if (e.type == SDL_QUIT){  
+            running =false; 
+        }
+        else if (e.type == SDL_KEYDOWN){
+            cv::Mat temp;   
+            std::cout << "0" << std::endl;
+            switch (e.key.keysym.sym){
+            case SDLK_UP:
+                std::cout << "resize" <<std::endl; 
+                temp=img.seamcarve(resizedImg,Image::carveMode::VERTICAL);
+                resizedImg.release();
+                temp.copyTo(resizedImg);
+                temp.release();
+                cv::imshow("resizeInit",resizedImg);
+                break;
+            case SDLK_DOWN:
+                std::cout << "0" << std::endl;
+                break;
+            case SDLK_LEFT:
+                std::cout << "0" << std::endl;
+                break;
+            case SDLK_RIGHT: 
+                std::cout << "0" << std::endl; 
+                break;
+            }
+        }
+        }
+    }   
+    
+   
+}
+
+    /*
+
+    while(c!=27){
+       
+        
+        while(c==97){
+            std::cout << "resize" <<std::endl;
+            cv::Mat temp =img.seamcarve(resizedImg,Image::carveMode::VERTICAL);
+            resizedImg.release();
+            temp.copyTo(resizedImg);
+            temp.release();
+            cv::imshow("resizeInit",resizedImg);
+            c=cv::waitKey(0);
+        }
+        
+        c=cv::waitKey(0);
+
+    }
+    
+   
+}
+/*
+    while(running){
+        detectKey::keyPress direction = keyInput.handleInput(running);
+        if(direction ==detectKey::keyPress::KEY_PRESS_UP){
+            std::cout << "carve"<<std::endl;
+             cv::Mat f=img.seamcarve(resizedImg,Image::carveMode::VERTICAL);
+             cv::imshow("resize",f);
+        }
+       
+        
+        }
+    }
+    */
