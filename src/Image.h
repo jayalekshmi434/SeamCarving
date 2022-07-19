@@ -32,12 +32,11 @@ class Image{
         std::vector<int> getLowestEnergyPath(cv::Mat &) ;
         std::vector<int> getSeamToRemove(cv::Mat&,carveMode);
         cv::Mat removeSeam(cv::Mat &,std::vector<int>);
+        cv::Mat removeSeam2(cv::Mat &,std::vector<int>);
         cv::Mat addSeam(cv::Mat &,std::vector<int>);
-        cv::Mat removeverticalSeam(cv::Mat &,std::vector<int>);
-        cv::Mat removeHorizontalSeam(cv::Mat &,std::vector<int>);
-        cv::Mat addHorizontalSeam(cv::Mat &,std::vector<int>);
-        cv::Mat addHorizontalSeam(cv::Mat &,std::vector<int>,bool);
-        cv::Mat addHSeam(cv::Mat &,std::vector<int>);
-        cv::Mat addVerticalSeam(cv::Mat &,std::vector<int>);
+        cv::Mat removeVerticalSeam(cv::Mat &);
+        cv::Mat removeHorizontalSeam(cv::Mat &);
+        cv::Mat addHorizontalSeam(cv::Mat &);
+        cv::Mat addVerticalSeam(cv::Mat &);
         cv::Mat seamcarve(cv::Mat& img, carveMode);
 };

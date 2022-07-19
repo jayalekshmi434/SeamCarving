@@ -21,7 +21,6 @@ void Seamcarver::carve(std::string path){
     cv::Mat temp;
     int c= cv::waitKey();
         while(c==100 || c==117 || c==108 ||c==114){
-            std::cout << "resize" <<std::endl;
             
           if(c==100){ //down
                     temp=img.seamcarve(resizedImg,Image::carveMode::HORIZONTAL_TRIM);
