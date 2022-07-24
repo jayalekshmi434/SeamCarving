@@ -25,8 +25,8 @@ In this project, you can build your own C++ application starting with this repo,
 3. Compile: `cmake .. && make`
 4. Run it: `./HelloWorld`.
 
-| Sl no| Specification  |                     | 
-|------|----------------|---------------------|
-|      |                | :heavy_check_mark:  | 
-|      |                |                     |  
-|      |                |                     | 
+| Sl no| Specification                                              | 
+|------|------------------------------------------------------------|---------------------|
+|      | The project uses Object Oriented Programming techniques.   | :heavy_check_mark:  | 
+|      |                                                            |                     |                      
+
