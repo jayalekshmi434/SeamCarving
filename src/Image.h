@@ -16,6 +16,7 @@ class Image{
         int height;
         int width;
         enum carveMode {VERTICAL_ADD,VERTICAL_TRIM,HORIZONTAL_ADD,HORIZONTAL_TRIM};
+        enum direction {VERTICAL,HORIZONTAL};
         
         cv::Mat image;
         cv::Mat grayScale;
@@ -24,15 +25,14 @@ class Image{
         Image(cv::Mat img);
         Image ();
         void resize();
-        void addPaddingToImage();
         void convertToGrayScale();
         cv::Mat calculateEnergy(cv::Mat& ); 
         void calculateCumulativePixels(int, int ,cv::Mat &,cv::Mat &);
+        cv::Mat getEnergyMap(cv::Mat&,direction);    
         cv::Mat getEnergyMap(cv::Mat&);    
-        std::vector<int> getLowestEnergyPath(cv::Mat &) ;
-        std::vector<int> getSeamToRemove(cv::Mat&,carveMode);
-        cv::Mat removeSeam(cv::Mat &,std::vector<int>);
-        cv::Mat removeSeam2(cv::Mat &,std::vector<int>);
+        std::vector<int> getLowestEnergyPath(cv::Mat &,direction) ;
+        std::vector<int>getLowestEnergyPathHorizontal(cv::Mat) ;
+        std::vector<int> getSeamToRemove(cv::Mat&,direction);
         cv::Mat addSeam(cv::Mat &,std::vector<int>);
         cv::Mat removeVerticalSeam(cv::Mat &);
         cv::Mat removeHorizontalSeam(cv::Mat &);
