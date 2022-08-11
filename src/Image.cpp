@@ -63,46 +63,42 @@ void Image::calculateCumulativePixels(int r, int c ,cv::Mat &energyMat,cv::Mat &
 
 cv::Mat Image::getEnergyMap(cv::Mat &energy_image,direction seam_direction){
    
-    double a,b,c;
 
     int rowsize = energy_image.rows;
     int colsize = energy_image.cols;
     
-    // initialize the map with zeros
     cv::Mat cumulativeEnergymap = cv::Mat(rowsize, colsize, CV_64F, double(0));
-    
-    // copy the first row
-    if (seam_direction == VERTICAL) {
-        energy_image.row(0).copyTo(cumulativeEnergymap.row(0));
-    } else if (seam_direction == HORIZONTAL) {
-        energy_image.col(0).copyTo(cumulativeEnergymap.col(0));
-    }
+    double left , middle,right;
    
     if (seam_direction == VERTICAL) {
-         
+
+        energy_image.row(0).copyTo(cumulativeEnergymap.row(0));
+
         for (int row = 1; row < rowsize; row++) {
             for (int col = 0; col < colsize; col++) {
-                a = cumulativeEnergymap.at<double>(row - 1, std::max(col - 1, 0));
-                b = cumulativeEnergymap.at<double>(row - 1, col);
-                c = cumulativeEnergymap.at<double>(row - 1,std:: min(col + 1, colsize - 1));
+
+                left = cumulativeEnergymap.at<double>(row - 1, std::max(col - 1, 0));
+                middle = cumulativeEnergymap.at<double>(row - 1, col);
+                right = cumulativeEnergymap.at<double>(row - 1,std:: min(col + 1, colsize - 1));
                 
-                cumulativeEnergymap.at<double>(row, col) = energy_image.at<double>(row, col) + std::min(a, std::min(b, c));
+                cumulativeEnergymap.at<double>(row, col) = energy_image.at<double>(row, col) + std::min(left, std::min(middle, right));
                 
             }
         }
-    }
-    else if (seam_direction == HORIZONTAL) {
+
+    } else {
+        energy_image.col(0).copyTo(cumulativeEnergymap.col(0));
         for (int col = 1; col < colsize; col++) {
             for (int row = 0; row < rowsize; row++) {
-                a = cumulativeEnergymap.at<double>(std::max(row - 1, 0), col - 1);
-                b = cumulativeEnergymap.at<double>(row, col - 1);
-                c = cumulativeEnergymap.at<double>(std::min(row + 1, rowsize - 1), col - 1);
-                cumulativeEnergymap.at<double>(row, col) = energy_image.at<double>(row, col) + std::min(a, std::min(b, c));
+                left = cumulativeEnergymap.at<double>(std::max(row - 1, 0), col - 1);
+                middle = cumulativeEnergymap.at<double>(row, col - 1);
+                right = cumulativeEnergymap.at<double>(std::min(row + 1, rowsize - 1), col - 1);
+                cumulativeEnergymap.at<double>(row, col) = energy_image.at<double>(row, col) + std::min(left, std::min(middle, right));
                 
             }
         }
     }
-     
+    
     return cumulativeEnergymap;
 }
 
@@ -116,6 +112,47 @@ cv::Mat Image::getEnergyMap(cv::Mat &energyMat){
         }
     }
     return energyMap;
+}
+
+std::vector<int>Image::getLowestEnergyPathHorizontal(cv::Mat &eMap) {
+
+    int rows=eMap.rows;
+    int cols =eMap.cols;
+
+    std::vector<int> seam;
+    std::vector<double> backTrack(3);
+    int offset = 0; 
+    cv::Point minIdx;
+    
+           
+    cv::Mat col = eMap.col(cols - 1);
+    cv::minMaxLoc(col, nullptr, nullptr, &minIdx, nullptr);
+        
+    
+    seam.resize(cols);
+    int idx = minIdx.y;
+    seam[cols - 1] = idx;
+
+        for (int i = cols- 2; i >= 0; i--) {
+            backTrack[0] = eMap.at<double>(std::max(idx - 1, 0), i);
+            backTrack[1] = eMap.at<double>(idx, i);
+            backTrack[2] = eMap.at<double>(std::min(idx + 1, rows- 1), i);
+            
+            int minIdx=std::min_element(backTrack.begin(),backTrack.end())-backTrack.begin();
+            
+            if(minIdx==0){
+                offset=-1;
+            } else if(minIdx== 1){
+                offset=0;
+            } else{
+                offset=1;
+            } 
+            idx += offset;
+            idx = std::min(std::max(idx, 0), rows - 1); 
+            seam[i] = idx; 
+        }
+    
+    return seam;
 }
 std::vector<int> Image::getLowestEnergyPath(cv::Mat &eMap,direction direction){
     int rows=eMap.rows;
@@ -156,35 +193,11 @@ std::vector<int> Image::getLowestEnergyPath(cv::Mat &eMap,direction direction){
             seam[r]=std::min(std::max(idx,0),eMap.cols-1);
         }
     } else {
+        seam=getLowestEnergyPathHorizontal(eMap);
+    }
        
-        seam.resize(cols);
-        cv::Point minIdxPointr;
-        cv::Mat temp=eMap.col(cols-1);
-        cv::minMaxLoc(temp,nullptr,nullptr,&minIdxPointr,nullptr);
-        int idx= minIdxPointr.y;
-        seam[eMap.cols-1]=idx;
-        
-        for (int c = cols - 2; c >= 0; c--) {
-            backTrack[0] = eMap.at<double>(std::max(idx - 1, 0), c);
-            backTrack[1] = eMap.at<double>(idx, c);
-            backTrack[2] = eMap.at<double>(std::min(idx + 1, rows- 1), c);
-            
-            int minIdx=std::min_element(backTrack.begin(),backTrack.end())-backTrack.begin();
-            
-            if(minIdx==0){
-                offset=-1;
-            } else if(minIdx== 1){
-                offset=0;
-            } else{
-                offset=1;
-            }
-            
-            idx=idx+offset;
-            seam[c] = std::min(std::max(idx, 0), cols - 1); 
-           
-    }
     return seam;
-    }
+    
 
 }
 
@@ -192,8 +205,10 @@ std::vector<int> Image::getSeamToRemove(cv::Mat &energyMap,Image::direction dire
     cv::Mat source;
     cv::Mat cumulativeEnergyMap;
     std::vector<int> lowestEnergyPath;
+   
     cumulativeEnergyMap= getEnergyMap(energyMap,direction);
-    lowestEnergyPath=getLowestEnergyPath(cumulativeEnergyMap,direction);    
+    
+    lowestEnergyPath=getLowestEnergyPath(cumulativeEnergyMap,direction); 
     return lowestEnergyPath;
 }
 
@@ -285,10 +300,11 @@ cv::Mat Image ::addVerticalSeam(cv::Mat &img){
 }
 
 cv::Mat Image::addHorizontalSeam(cv::Mat &img){
-
+    
     cv:: cvtColor(img,grayScale,cv::COLOR_BGR2GRAY);
     cv::Mat eMap =calculateEnergy(grayScale);
 	std::vector<int>seam=getSeamToRemove(eMap,HORIZONTAL);
+    
     cv::Mat modifiedImage(img.rows+1, img.cols, CV_8UC3, cv::Scalar(0, 0, 0));
 			int max = width - 1;
 			int height = 0;
@@ -298,7 +314,7 @@ cv::Mat Image::addHorizontalSeam(cv::Mat &img){
 				{
 					// duplicate best seam
 					if (h == seam[max])
-					{
+					{  
 						modifiedImage.at<cv::Vec3b>(h, w) = img.at<cv::Vec3b>(height, w);
                         //modifiedImage.at<cv::Vec3b>(h, w) = 255;
 						modifiedImage.at<cv::Vec3b>(h+1, w) = img.at<cv::Vec3b>(height, w);
@@ -307,7 +323,8 @@ cv::Mat Image::addHorizontalSeam(cv::Mat &img){
 					}
 					else
 					{
-						modifiedImage.at<cv::Vec3b>(h, w) = img.at<cv::Vec3b>(height, w);
+						
+                        modifiedImage.at<cv::Vec3b>(h, w) = img.at<cv::Vec3b>(height, w);
 						height++;
 					}
 				}

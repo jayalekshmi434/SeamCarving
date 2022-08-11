@@ -16,10 +16,12 @@ class Seamcarver{
     public:
     int width;
     int val;
-    Seamcarver();
-    void setTrackbar(int width , int x);
-   
-   
+    Seamcarver(bool);
+    ~Seamcarver();
     void carve(std::string );
+
+    private:
+     std::unique_ptr<Image> img;
+     bool running;
     
 };

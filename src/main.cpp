@@ -21,20 +21,12 @@ static void show_usage(std::string name)
               << std::endl;
 }
 
-static void on_trackbar(int,void*){
-   std::cout << "called " <<std::endl;
-   cv::Size sz= original.size();
-   std::cout << sz.height <<std::endl;
-   cv::resize(original, original, cv::Size(val,300));
-   cv::imshow( "Slider", original );
-}
 int main (int argc,char* argv[]) {
 
 	if (argc < 2) { // We expect 2 arguments: the program name, the image source path
         show_usage(argv[0]);
 		return 1;
     }
-
 	std::string path;
 	if (std::string(argv[1]) == "--image") {
 		path = argv[2];
@@ -45,17 +37,8 @@ int main (int argc,char* argv[]) {
 	
 
 	
-	Seamcarver seamcarver;
-	seamcarver.carve(path);
-
-    
-
-
-    //original = cv::imread(path);
-    //cv::imshow("Slider",original);
-    //cv::resize(original,original,cv::Size(300,250));//loading the image in the matrix//
-    //cv::namedWindow("Slider");
-   
+	Seamcarver seamcarver(true);
+	seamcarver.carve(path);  
 
 	return 0;
 
