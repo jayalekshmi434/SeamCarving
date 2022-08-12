@@ -30,10 +30,10 @@ Reference : [https://faculty.runi.ac.il/arik/scweb/imret/index.html](http://grap
 4. Run it: `./SeamCarving --image ../Data/broadway.jpg`
 
 ## Use the following keys to resize :
-*l----> to decrease width
-*r----> to increase width
-*d----> to decrease height
-*u----> to increase height
+* l----> to decrease width
+* r----> to increase width
+* d----> to decrease height
+* u----> to increase height
 
 | Sl no| Specification                                              |                     |File/line|
 |------|------------------------------------------------------------|---------------------|-----|
