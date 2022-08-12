@@ -49,3 +49,7 @@ Reference : [https://faculty.runi.ac.il/arik/scweb/imret/index.html](http://grap
 |11|The project reads data from a file and process the data, or the program writes data to a file.|:heavy_check_mark:|Image.cpp, 5|
 |12|The project accepts user input and processes the input.| :heavy_check_mark:|main.cpp |
 |13|The submission must compile and run.|  :heavy_check_mark:| Compiles and runs in Project workspace|
+
+
+Class Information:
+![alt text](https://github.com/jayalekshmi434/SeamCarving/blob/master/Results/classdiag.JPG)
