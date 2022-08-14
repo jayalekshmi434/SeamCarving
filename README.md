@@ -7,10 +7,9 @@ Reference : [https://faculty.runi.ac.il/arik/scweb/imret/index.html](http://grap
 ## Results
 <img src="Data/snow.gif"/>
 <img src="Results/result1.JPG"/>
-![alt text](https://github.com/jayalekshmi434/SeamCarving/blob/master/Results/result1.JPG)
-![alt text](https://github.com/jayalekshmi434/SeamCarving/blob/master/Results/result2.JPG)
-![alt text](https://github.com/jayalekshmi434/SeamCarving/blob/master/Results/result3.JPG)
-![alt text](https://github.com/jayalekshmi434/SeamCarving/blob/master/Results/result4.JPG)
+<img src="Results/result2.JPG"/>
+<img src="Results/result3.JPG"/>
+<img src="Results/result4.JPG"/>
 
 ## Dependencies for Running Locally
 * cmake >= 3.7
