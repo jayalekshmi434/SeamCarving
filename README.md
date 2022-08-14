@@ -5,7 +5,7 @@ This project is an implementation of Seam carving (or liquid rescaling) which  a
 Reference : [https://faculty.runi.ac.il/arik/scweb/imret/index.html](http://graphics.cs.cmu.edu/courses/15-463/2012_fall/hw/proj3-seamcarving/imret.pdf)
           : https://github.com/esimov/caire/tree/e5f861daa4f19614e6315cc45686ded67fb6353f
 ## Results
-![alt text](https://github.com/jayalekshmi434/SeamCarving/blob/master/Results/snow.gif)
+<img src="Data/snow.gif"/>
 ![alt text](https://github.com/jayalekshmi434/SeamCarving/blob/master/Results/result1.JPG)
 ![alt text](https://github.com/jayalekshmi434/SeamCarving/blob/master/Results/result2.JPG)
 ![alt text](https://github.com/jayalekshmi434/SeamCarving/blob/master/Results/result3.JPG)
