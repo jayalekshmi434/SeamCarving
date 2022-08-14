@@ -6,6 +6,7 @@ Reference : [https://faculty.runi.ac.il/arik/scweb/imret/index.html](http://grap
           : https://github.com/esimov/caire/tree/e5f861daa4f19614e6315cc45686ded67fb6353f
 ## Results
 <img src="Data/snow.gif"/>
+## 
 ![alt text](https://github.com/jayalekshmi434/SeamCarving/blob/master/Results/result1.JPG)
 ![alt text](https://github.com/jayalekshmi434/SeamCarving/blob/master/Results/result2.JPG)
 ![alt text](https://github.com/jayalekshmi434/SeamCarving/blob/master/Results/result3.JPG)
